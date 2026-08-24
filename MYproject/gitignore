@@ -1,0 +1,62 @@
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Static files (if generated/build output, not source)
+# Uncomment if your "static" folder is generated rather than hand-written:
+# static/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#12141C;
+    --paper-dark:#1A1D28;
+    --card:#1E2230;
+    --ink:#ECE8DA;
+    --ink-soft:#B7BED2;
+    --stamp:#E4593F;
+    --stamp-dark:#C1432E;
+    --good:#5FBE84;
+    --muted:#7B8199;
+    --line:#333A4D;
+    --shadow: rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--stamp);outline-offset:2px;}
+
+  /* Header */
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px;
+    transform:rotate(-6deg);
+  }
+  .brand h1{font-family:'IBM Plex Mono',monospace;font-size:22px;letter-spacing:0.5px;margin:0;}
+  .brand .sub{font-size:12px;color:var(--muted);margin-top:1px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+  .user-chip{display:flex;align-items:center;gap:10px;font-size:14px;}
+  .user-chip .name{font-family:'IBM Plex Mono',monospace;background:var(--ink);color:var(--paper);padding:4px 10px;border-radius:20px;font-size:12px;}
+  .link-btn{background:none;border:none;color:var(--ink-soft);text-decoration:underline;font-size:13px;padding:2px 0;}
+
+  /* settings bar */
+  .settings{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .settings input{border:1px dashed var(--line);background:transparent;padding:5px 8px;border-radius:4px;font-size:12px;color:var(--ink-soft);width:220px;}
+
+  /* toast */
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:6px;
+    font-size:14px;box-shadow:0 6px 18px var(--shadow);z-index:50;display:none;max-width:90%;text-align:center;}
+  #toast.error{background:var(--stamp-dark);}
+  #toast.show{display:block;}
+
+  /* cards / panels */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px;box-shadow:0 4px 14px var(--shadow);}
+  .panel + .panel{margin-top:18px;}
+  h2.section-title{font-family:'IBM Plex Mono',monospace;font-size:15px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:0 0 18px;}
+
+  /* auth */
+  .authbox{max-width:420px;margin:40px auto 0;}
+  .tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--line);}
+  .tab{flex:1;text-align:center;padding:10px 0;background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;}
+  .tab.active{color:var(--ink);border-bottom-color:var(--stamp);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px;}
+  .field input{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);font-size:14px;color:var(--ink);}
+  .field input:focus{border-color:var(--stamp);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;border-radius:6px;border:none;font-weight:600;font-size:14px;}
+  .btn-primary{background:var(--stamp);color:#fff;}
+  .btn-primary:hover{background:var(--stamp-dark);}
+  .btn-outline{background:transparent;border:1.5px solid var(--ink);color:var(--ink);}
+  .btn-outline:hover{background:var(--ink);color:var(--paper);}
+  .btn-ghost{background:transparent;color:var(--stamp-dark);border:none;text-decoration:underline;font-size:13px;padding:4px 0;}
+  .btn-block{width:100%;}
+  .btn-danger{background:transparent;color:var(--stamp-dark);border:1px solid var(--stamp-dark);}
+  .btn-danger:hover{background:var(--stamp-dark);color:#fff;}
+
+  /* dashboard header row */
+  .row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .dash-title{font-family:'IBM Plex Mono',monospace;font-size:20px;}
+
+  /* quiz cards grid - index card look */
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+  .quiz-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px 16px 16px;
+    position:relative;
+    box-shadow:0 3px 10px var(--shadow);
+    transition:transform .15s ease;
+  }
+  .quiz-card:nth-child(3n+1){transform:rotate(-0.6deg);}
+  .quiz-card:nth-child(3n+2){transform:rotate(0.5deg);}
+  .quiz-card:nth-child(3n){transform:rotate(-0.3deg);}
+  .quiz-card:hover{transform:rotate(0deg) translateY(-2px);}
+  .quiz-card .pin{position:absolute;top:-7px;left:16px;width:12px;height:12px;border-radius:50%;background:var(--stamp);box-shadow:0 2px 3px var(--shadow);}
+  .quiz-card h3{font-size:16px;margin:6px 0 6px;font-family:'IBM Plex Mono',monospace;}
+  .quiz-card p{font-size:13px;color:var(--ink-soft);margin:0 0 14px;line-height:1.4;min-height:36px;}
+  .ticket{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);border:1px dashed var(--line);padding:3px 8px;border-radius:3px;text-transform:uppercase;}
+  .card-actions{display:flex;gap:8px;margin-top:14px;}
+  .card-actions button{flex:1;font-size:12px;padding:8px 10px;}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--muted);}
+  .empty .big{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink-soft);margin-bottom:6px;}
+
+  /* quiz builder */
+  .q-block{border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:14px;background:var(--paper-dark);}
+  .q-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .q-block-head span{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .opt-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .opt-row input[type=text]{flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:5px;background:var(--card);font-size:13px;}
+  .opt-row input[type=radio]{width:16px;height:16px;accent-color:var(--good);}
+  .remove-x{background:none;border:none;color:var(--stamp-dark);font-size:16px;line-height:1;padding:4px 6px;}
+  .add-link{background:none;border:1px dashed var(--muted);color:var(--ink-soft);border-radius:5px;padding:7px 12px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+
+  /* quiz detail */
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .questions-list{margin-top:20px;}
+  .q-item{padding:12px 0;border-top:1px solid var(--line);}
+  .q-item:first-child{border-top:none;}
+  .q-item .qt{font-weight:600;margin-bottom:6px;}
+  .q-item ul{margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);}
+  .q-item .correct{color:var(--good);font-weight:600;}
+
+  /* play view */
+  .play-code-box{max-width:380px;margin:40px auto 0;text-align:center;}
+  .play-code-box input{text-align:center;letter-spacing:3px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;font-size:18px;}
+  .play-question{margin-bottom:22px;}
+  .play-question .qt{font-weight:600;margin-bottom:10px;font-size:15px;}
+  .play-opt{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:6px;background:var(--card);font-size:14px;}
+  .play-opt.selected{border-color:var(--stamp);background:rgba(228,89,63,0.14);}
+  .score-stamp{
+    display:inline-block;border:4px solid var(--stamp);color:var(--stamp);
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:34px;
+    padding:14px 26px;border-radius:8px;transform:rotate(-4deg);margin:20px 0;
+  }
+  .center{text-align:center;}
+  .small-muted{font-size:12px;color:var(--muted);}
+  .top-actions{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ---------------- state ---------------- */
+const state = {
+  apiBase: 'http://localhost:8000',
+  token: null,
+  username: null,
+  view: 'auth', // auth | dashboard | create | detail | play
+  authTab: 'login',
+  quizzes: [],
+  currentQuiz: null,
+  currentQuestions: [],
+  newQuiz: { title:'', description:'', questions:[ blankQuestion() ] },
+  playCode: '',
+  playQuiz: null,
+  playQuestions: [],
+  playAnswers: {},
+  playResult: null,
+  loading: false,
+};
+
+function blankQuestion(){
+  return { question_text:'', options:['',''], correct_option: 0 };
+}
+
+/* ---------------- api helper ---------------- */
+async function api(path, opts={}){
+  const headers = opts.headers || {};
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  let res;
+  try{
+    res = await fetch(state.apiBase + path, {...opts, headers});
+  }catch(e){
+    throw new Error('Could not reach the API at ' + state.apiBase + '. Check the API URL and that the server is running.');
+  }
+  let data = null;
+  const text = await res.text();
+  try{ data = text ? JSON.parse(text) : null; }catch(e){ data = text; }
+  if(!res.ok){
+    const detail = (data && data.detail) ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)) : res.statusText;
+    throw new Error(detail || 'Request failed');
+  }
+  return data;
+}
+
+function toast(msg, type='ok'){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type==='error' ? ' error' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ el.classList.remove('show'); }, 4200);
+}
+
+/* ---------------- actions ---------------- */
+async function doRegister(e){
+  e.preventDefault();
+  const f = e.target;
+  try{
+    await api('/register', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username: f.username.value, email: f.email.value, password: f.password.value})
+    });
+    toast('Account created. Log in to continue.');
+    state.authTab = 'login';
+    render();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+async function doLogin(e){
+  e.preventDefault();
+  const f = e.target;
+  try{
+    const body = new URLSearchParams();
+    body.set('username', f.username.value);
+    body.set('password', f.password.value);
+    const data = await api('/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body
+    });
+    state.token = data.access_token;
+    state.username = f.username.value;
+    state.view = 'dashboard';
+    toast('Logged in as ' + state.username);
+    await loadQuizzes();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+function logout(){
+  state.token = null; state.username = null; state.quizzes = [];
+  state.view = 'auth'; state.authTab = 'login';
+  render();
+  toast('Signed out');
+}
+
+async function loadQuizzes(){
+  try{
+    state.quizzes = await api('/quizzes');
+  }catch(err){ toast(err.message, 'error'); }
+  render();
+}
+
+function goCreate(){
+  state.newQuiz = { title:'', description:'', questions:[ blankQuestion() ] };
+  state.view = 'create';
+  render();
+}
+
+function addQuestion(){
+  state.newQuiz.questions.push(blankQuestion());
+  render();
+}
+function removeQuestion(i){
+  state.newQuiz.questions.splice(i,1);
+  render();
+}
+function addOption(qi){
+  state.newQuiz.questions[qi].options.push('');
+  render();
+}
+function removeOption(qi, oi){
+  const q = state.newQuiz.questions[qi];
+  q.options.splice(oi,1);
+  if (q.correct_option >= q.options.length) q.correct_option = 0;
+  render();
+}
+function updateQField(field, val){ state.newQuiz[field] = val; }
+function updateQuestionText(qi, val){ state.newQuiz.questions[qi].question_text = val; }
+function updateOptionText(qi, oi, val){ state.newQuiz.questions[qi].options[oi] = val; }
+function setCorrect(qi, oi){ state.newQuiz.questions[qi].correct_option = oi; render(); }
+
+async function submitNewQuiz(e){
+  e.preventDefault();
+  const nq = state.newQuiz;
+  if (!nq.title.trim()){ toast('Give the quiz a title.', 'error'); return; }
+  for (const q of nq.questions){
+    if (!q.question_text.trim()){ toast('Every question needs text.', 'error'); return; }
+    const opts = q.options.map(o=>o.trim()).filter(Boolean);
+    if (opts.length < 2){ toast('Every question needs at least two options.', 'error'); return; }
+  }
+  const payload = {
+    title: nq.title,
+    description: nq.description,
+    questions: nq.questions.map(q=>{
+      const opts = q.options.map(o=>o.trim()).filter(Boolean);
+      return {
+        question_text: q.question_text,
+        options: opts,
+        correct_option: opts[q.correct_option] || opts[0]
+      };
+    })
+  };
+  try{
+    await api('/quizzes', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    toast('Quiz created.');
+    state.view = 'dashboard';
+    await loadQuizzes();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+async function openQuiz(id){
+  try{
+    const quiz = await api('/quizzes/' + id);
+    state.currentQuiz = quiz;
+    state.currentQuestions = quiz.questions || [];
+    state.view = 'detail';
+    render();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+async function deleteQuiz(id){
+  if (!confirm('Delete this quiz? This cannot be undone.')) return;
+  try{
+    await api('/quizzes/delete/' + id, { method:'DELETE' });
+    toast('Quiz deleted.');
+    state.view = 'dashboard';
+    await loadQuizzes();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+function goDashboard(){ state.view='dashboard'; render(); loadQuizzes(); }
+function goPlayEntry(){ state.view='play'; state.playQuiz=null; state.playResult=null; render(); }
+
+async function loadPublicQuiz(e){
+  e.preventDefault();
+  const code = state.playCode.trim();
+  if (!code) return;
+  try{
+    const data = await api('/quizzes/public/' + code);
+    state.playQuiz = data.quiz;
+    state.playQuestions = data.questions || [];
+    state.playAnswers = {};
+    state.playResult = null;
+    render();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+function selectAnswer(qid, opt){
+  state.playAnswers[qid] = opt;
+  render();
+}
+
+async function submitPlay(){
+  const unanswered = state.playQuestions.filter(q => !(q.id in state.playAnswers));
+  if (unanswered.length){ toast('Answer every question before submitting.', 'error'); return; }
+  try{
+    const result = await api('/quizzes/public/' + state.playQuiz.short_code + '/submit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ answers: state.playAnswers })
+    });
+    state.playResult = result;
+    render();
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+function playAgain(){
+  state.playQuiz=null; state.playResult=null; state.playCode=''; render();
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = header() + settingsBar() + body();
+  bindGlobalInputs();
+}
+
+function header(){
+  return `
+  <header class="top">
+    <div class="brand">
+      <div class="mark">QD</div>
+      <div>
+        <h1>Quiz Deck</h1>
+        <div class="sub">make it &middot; share it &middot; grade it</div>
+      </div>
+    </div>
+    ${state.token ? `
+      <div class="user-chip">
+        <span class="name">${escapeHtml(state.username || 'you')}</span>
+        <button class="link-btn" onclick="logout()">Sign out</button>
+      </div>` : `
+      <button class="btn-ghost" onclick="goPlayEntry()">Play a quiz with a code &rarr;</button>
+    `}
+  </header>`;
+}
+
+function settingsBar(){
+  return `
+  <div class="settings">
+    <span>API URL</span>
+    <input id="apiBaseInput" value="${escapeAttr(state.apiBase)}" />
+  </div>`;
+}
+
+function body(){
+  if (state.view === 'auth') return authView();
+  if (state.view === 'play') return playView();
+  if (!state.token) return authView();
+  if (state.view === 'dashboard') return dashboardView();
+  if (state.view === 'create') return createView();
+  if (state.view === 'detail') return detailView();
+  return dashboardView();
+}
+
+function authView(){
+  const isLogin = state.authTab === 'login';
+  return `
+  <div class="authbox">
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab ${isLogin?'active':''}" onclick="state.authTab='login';render()">Log in</button>
+        <button class="tab ${!isLogin?'active':''}" onclick="state.authTab='register';render()">Register</button>
+      </div>
+      ${isLogin ? `
+      <form onsubmit="doLogin(event)">
+        <div class="field"><label>Username</label><input name="username" required autocomplete="username"/></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required autocomplete="current-password"/></div>
+        <button class="btn btn-primary btn-block" type="submit">Log in</button>
+      </form>` : `
+      <form onsubmit="doRegister(event)">
+        <div class="field"><label>Username</label><input name="username" required/></div>
+        <div class="field"><label>Email</label><input name="email" type="email" required/></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required/></div>
+        <button class="btn btn-primary btn-block" type="submit">Create account</button>
+      </form>`}
+    </div>
+    <p class="center small-muted" style="margin-top:14px;">Just want to take a quiz? <a href="#" onclick="goPlayEntry();return false;">Enter a code instead &rarr;</a></p>
+  </div>`;
+}
+
+function dashboardView(){
+  const cards = state.quizzes.map(q => `
+    <div class="quiz-card">
+      <div class="pin"></div>
+      <h3>${escapeHtml(q.title)}</h3>
+      <p>${escapeHtml(q.description || 'No description yet.')}</p>
+      <span class="ticket">code: ${escapeHtml(q.short_code)}</span>
+      <div class="card-actions">
+        <button class="btn btn-outline" onclick="openQuiz(${q.id})">Open</button>
+        <button class="btn btn-danger" onclick="deleteQuiz(${q.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+  <div class="row-between">
+    <div class="dash-title">Your quizzes</div>
+    <button class="btn btn-primary" onclick="goCreate()">+ New quiz</button>
+  </div>
+  ${state.quizzes.length ? `<div class="card-grid">${cards}</div>` : `
+    <div class="panel empty">
+      <div class="big">No quizzes yet</div>
+      <div>Build your first one and share the code with anyone.</div>
+      <div style="margin-top:16px;"><button class="btn btn-primary" onclick="goCreate()">+ New quiz</button></div>
+    </div>`}
+  `;
+}
+
+function createView(){
+  const nq = state.newQuiz;
+  const questionsHtml = nq.questions.map((q, qi) => `
+    <div class="q-block">
+      <div class="q-block-head">
+        <span>Question ${qi+1}</span>
+        ${nq.questions.length > 1 ? `<button class="remove-x" onclick="removeQuestion(${qi})" title="Remove question">&times;</button>` : ''}
+      </div>
+      <div class="field">
+        <input type="text" placeholder="What do you want to ask?" value="${escapeAttr(q.question_text)}"
+          oninput="updateQuestionText(${qi}, this.value)"/>
+      </div>
+      ${q.options.map((opt, oi) => `
+        <div class="opt-row">
+          <input type="radio" name="correct-${qi}" ${q.correct_option===oi?'checked':''} onchange="setCorrect(${qi}, ${oi})" title="Mark as correct answer"/>
+          <input type="text" placeholder="Option ${oi+1}" value="${escapeAttr(opt)}" oninput="updateOptionText(${qi}, ${oi}, this.value)"/>
+          ${q.options.length > 2 ? `<button class="remove-x" onclick="removeOption(${qi}, ${oi})" title="Remove option">&times;</button>` : ''}
+        </div>
+      `).join('')}
+      <button type="button" class="add-link" onclick="addOption(${qi})">+ add option</button>
+    </div>
+  `).join('');
+
+  return `
+  <div class="top-actions"><button class="btn-ghost" onclick="goDashboard()">&larr; Back to quizzes</button></div>
+  <div class="panel">
+    <h2 class="section-title">New quiz</h2>
+    <form onsubmit="submitNewQuiz(event)">
+      <div class="field"><label>Title</label>
+        <input value="${escapeAttr(nq.title)}" oninput="updateQField('title', this.value)" required/>
+      </div>
+      <div class="field"><label>Description</label>
+        <input value="${escapeAttr(nq.description)}" oninput="updateQField('description', this.value)" placeholder="A quick line about what this covers"/>
+      </div>
+      <h2 class="section-title" style="margin-top:22px;">Questions</h2>
+      ${questionsHtml}
+      <button type="button" class="add-link" style="margin-bottom:20px;" onclick="addQuestion()">+ add question</button>
+      <div>
+        <button class="btn btn-primary" type="submit">Save quiz</button>
+      </div>
+    </form>
+  </div>`;
+}
+
+function detailView(){
+  const q = state.currentQuiz;
+  if (!q) return dashboardView();
+  const shareUrl = state.apiBase + '/quizzes/public/' + q.short_code;
+  const questions = (state.currentQuestions || []).map((item, i) => `
+    <div class="q-item">
+      <div class="qt">${i+1}. ${escapeHtml(item.question_text)}</div>
+      <ul>
+        ${(item.options||[]).map(o => `<li class="${o===item.correct_option?'correct':''}">${escapeHtml(o)}${o===item.correct_option?' ✓':''}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  return `
+  <div class="top-actions"><button class="btn-ghost" onclick="goDashboard()">&larr; Back to quizzes</button></div>
+  <div class="panel">
+    <div class="detail-head">
+      <div>
+        <h2 style="margin:0 0 6px;font-family:'IBM Plex Mono',monospace;">${escapeHtml(q.title)}</h2>
+        <p style="margin:0;color:var(--ink-soft);">${escapeHtml(q.description || '')}</p>
+      </div>
+      <button class="btn btn-danger" onclick="deleteQuiz(${q.id})">Delete quiz</button>
+    </div>
+    <div style="margin-top:16px;">
+      <span class="ticket">share code: ${escapeHtml(q.short_code)}</span>
+      <div class="small-muted" style="margin-top:8px;word-break:break-all;">${escapeHtml(shareUrl)}</div>
+    </div>
+    <div class="questions-list">${questions || '<p class="small-muted">No questions loaded.</p>'}</div>
+  </div>`;
+}
+
+function playView(){
+  if (state.playResult){
+    return `
+    <div class="play-code-box center">
+      <div class="score-stamp">${state.playResult.score} / ${state.playResult.total_questions}</div>
+      <div><button class="btn btn-outline" onclick="playAgain()">Try another code</button></div>
+    </div>`;
+  }
+
+  if (!state.playQuiz){
+    return `
+    <div class="play-code-box">
+      <div class="panel">
+        <h2 class="section-title">Enter a quiz code</h2>
+        <form onsubmit="loadPublicQuiz(event)">
+          <div class="field"><input placeholder="e.g. 4F9A2C1D" oninput="state.playCode=this.value" required/></div>
+          <button class="btn btn-primary btn-block" type="submit">Find quiz</button>
+        </form>
+      </div>
+      ${!state.token ? `<p class="center small-muted" style="margin-top:14px;">Have an account? <a href="#" onclick="state.view='auth';render();return false;">Log in</a> to build your own.</p>` : ''}
+    </div>`;
+  }
+
+  const q = state.playQuiz;
+  const questions = state.playQuestions.map((item, i) => `
+    <div class="play-question">
+      <div class="qt">${i+1}. ${escapeHtml(item.question_text)}</div>
+      ${(item.options||[]).map(opt => `
+        <button type="button" class="play-opt ${state.playAnswers[item.id]===opt?'selected':''}" onclick="selectAnswer(${item.id}, ${escapeAttr(JSON.stringify(opt))})">${escapeHtml(opt)}</button>
+      `).join('')}
+    </div>
+  `).join('');
+
+  return `
+  <div class="top-actions"><button class="btn-ghost" onclick="playAgain()">&larr; Use a different code</button></div>
+  <div class="panel">
+    <h2 style="margin:0 0 6px;font-family:'IBM Plex Mono',monospace;">${escapeHtml(q.title)}</h2>
+    <p style="color:var(--ink-soft);margin-top:0;">${escapeHtml(q.description || '')}</p>
+    <div style="margin-top:18px;">${questions}</div>
+    <button class="btn btn-primary" onclick="submitPlay()">Submit answers</button>
+  </div>`;
+}
+
+/* ---------------- helpers ---------------- */
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+function bindGlobalInputs(){
+  const el = document.getElementById('apiBaseInput');
+  if (el){
+    el.addEventListener('change', () => { state.apiBase = el.value.replace(/\/$/, ''); toast('API URL updated'); });
+  }
+}
+
+render();
+</script>
+</body>
+</html>
