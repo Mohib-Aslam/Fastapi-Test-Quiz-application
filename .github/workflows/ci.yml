@@ -27,6 +27,7 @@ jobs:
       - name: Check app imports correctly
         env:
           SECRET_KEY: dummy-secret-for-ci
+          working-directory: ./MYproject 
         run: |
           python -c "import main"
 
