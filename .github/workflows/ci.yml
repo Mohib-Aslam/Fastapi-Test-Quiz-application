@@ -27,9 +27,10 @@ jobs:
       - name: Check app imports correctly
         env:
           SECRET_KEY: dummy-secret-for-ci
+        working-directory: ./MYproject 
           
         run: |
-          python -c "import MYproject.main"
+          python -c "import main"
 
       # Uncomment once you add tests (e.g. with pytest)
       # - name: Run tests
