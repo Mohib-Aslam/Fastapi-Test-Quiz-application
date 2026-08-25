@@ -1,7 +1,7 @@
 
 from sqlmodel import JSON, Field, SQLModel, Column
 from pydantic import BaseModel, EmailStr, ConfigDict
-`   `
+
 
 #Users Table
 class User(SQLModel, table=True):
