@@ -29,7 +29,7 @@ jobs:
           SECRET_KEY: dummy-secret-for-ci
           
         run: |
-          python -c "import ./MYproject/main"
+          python -c "import MYproject.main"
 
       # Uncomment once you add tests (e.g. with pytest)
       # - name: Run tests
